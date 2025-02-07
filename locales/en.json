@@ -1,0 +1,69 @@
+{
+    "app": {
+        "title": "WaveTrader",
+        "subtitle": "AI-Powered Solana Trading Bot",
+        "wallet": {
+            "connect": "Connect Wallet",
+            "install": "Please install Phantom wallet"
+        },
+        "chart": {
+            "title": "Price Chart",
+            "input": "Enter token contract address",
+            "load": "Load Chart"
+        },
+        "strategy": {
+            "title": "AI Trading Strategy",
+            "generate": "Generate Strategy",
+            "loading": "Generating strategy...",
+            "placeholder": "Strategy will be displayed here..."
+        },
+        "trade": {
+            "title": "Execute Trade",
+            "mode": {
+                "label": "Trading Direction",
+                "buy": "Buy Token",
+                "sell": "Sell Token"
+            },
+            "input": {
+                "label": "Buy Method",
+                "token": "By Token Amount",
+                "sol": "By SOL Amount"
+            },
+            "amount": {
+                "label": "Amount",
+                "placeholder": "Enter amount"
+            },
+            "slippage": {
+                "label": "Slippage %",
+                "placeholder": "Slippage"
+            },
+            "order": {
+                "label": "Order Type",
+                "market": "Market Order",
+                "limit": "Limit Order"
+            },
+            "limit": {
+                "label": "Limit Price",
+                "placeholder": "Enter price"
+            },
+            "execute": "Execute Trade",
+            "pending": {
+                "title": "Pending Orders",
+                "cancel": "Cancel"
+            }
+        },
+        "ai": {
+            "title": "AI Assistant",
+            "input": "Enter your question...",
+            "send": "Send"
+        },
+        "errors": {
+            "wallet_required": "Please connect wallet first",
+            "invalid_amount": "Please enter a valid amount",
+            "invalid_slippage": "Please enter a valid slippage value",
+            "invalid_price": "Please enter a valid price",
+            "insufficient_balance": "Insufficient balance",
+            "transaction_failed": "Transaction failed"
+        }
+    }
+} 

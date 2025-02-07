@@ -1,0 +1,69 @@
+{
+    "app": {
+        "title": "WaveTrader",
+        "subtitle": "AI驱动的Solana交易机器人",
+        "wallet": {
+            "connect": "连接钱包",
+            "install": "请安装Phantom钱包"
+        },
+        "chart": {
+            "title": "价格图表",
+            "input": "输入代币合约地址",
+            "load": "加载图表"
+        },
+        "strategy": {
+            "title": "AI交易策略",
+            "generate": "生成策略",
+            "loading": "正在生成策略...",
+            "placeholder": "策略将在这里显示..."
+        },
+        "trade": {
+            "title": "执行交易",
+            "mode": {
+                "label": "交易方向",
+                "buy": "买入代币",
+                "sell": "卖出代币"
+            },
+            "input": {
+                "label": "买入方式",
+                "token": "按代币数量",
+                "sol": "按SOL数量"
+            },
+            "amount": {
+                "label": "数量",
+                "placeholder": "输入数量"
+            },
+            "slippage": {
+                "label": "滑点 %",
+                "placeholder": "滑点"
+            },
+            "order": {
+                "label": "挂单类型",
+                "market": "市价单",
+                "limit": "限价单"
+            },
+            "limit": {
+                "label": "限价价格",
+                "placeholder": "输入价格"
+            },
+            "execute": "执行交易",
+            "pending": {
+                "title": "当前挂单",
+                "cancel": "取消"
+            }
+        },
+        "ai": {
+            "title": "AI助手",
+            "input": "输入您的问题...",
+            "send": "发送"
+        },
+        "errors": {
+            "wallet_required": "请先连接钱包",
+            "invalid_amount": "请输入有效的交易数量",
+            "invalid_slippage": "请输入有效的滑点值",
+            "invalid_price": "请输入有效的价格",
+            "insufficient_balance": "余额不足",
+            "transaction_failed": "交易失败"
+        }
+    }
+} 

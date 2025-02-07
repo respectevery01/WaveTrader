@@ -1,15 +1,19 @@
 <!DOCTYPE html>
-<html lang="zh">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>WaveTrader - AI量化交易</title>
+    <title data-i18n="app.title">WaveTrader</title>
     <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
     <link rel="stylesheet" href="/static/styles.css">
-    <!-- 添加Buffer polyfill -->
+    <!-- Add Buffer polyfill -->
     <script src="https://bundle.run/buffer@6.0.3"></script>
-    <!-- 添加Solana Web3.js -->
+    <!-- Add Solana Web3.js -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <!-- Add marked.js -->
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <!-- Add i18n utility -->
+    <script src="/static/js/i18n.js"></script>
     <style>
         body {
             font-family: Arial, sans-serif;
@@ -111,28 +115,27 @@
     </style>
 </head>
 <body class="bg-gray-900 text-white">
-    <div class="container mx-auto px-6 py-8">  <!-- 增加容器内边距 -->
-        <header class="text-center mb-16 relative">  <!-- 增加头部下边距 -->
+    <div class="container mx-auto px-6 py-8">
+        <header class="text-center mb-16 relative">
             <div class="absolute right-0 top-0">
                 <button id="walletButton" onclick="connectWallet()" 
-                        class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg flex items-center text-lg">  <!-- 调整钱包按钮大小 -->
-                    <span id="walletStatus">连接钱包</span>
+                        class="bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg flex items-center text-lg">
+                    <span id="walletStatus" data-i18n="app.wallet.connect">Connect Wallet</span>
                 </button>
             </div>
-            <h1 class="text-5xl font-bold text-purple-500 mb-4">WaveTrader</h1>  <!-- 增加标题大小 -->
-            <p class="text-gray-400 text-xl">AI驱动的Solana智能交易机器人</p>  <!-- 增加副标题大小 -->
+            <h1 class="text-5xl font-bold text-purple-500 mb-4" data-i18n="app.title">WaveTrader</h1>
+            <p class="text-gray-400 text-xl" data-i18n="app.subtitle">AI-Powered Solana Trading Bot</p>
         </header>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">  <!-- 增加列间距 -->
-            <!-- 图表部分 -->
-            <div class="bg-gray-800 rounded-xl p-8 shadow-xl">  <!-- 增加卡片内边距和圆角 -->
-                <h2 class="text-3xl font-semibold mb-6">价格图表</h2>  <!-- 增加标题大小和间距 -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-10">
+            <!-- Chart section -->
+            <div class="bg-gray-800 rounded-xl p-8 shadow-xl">
+                <h2 class="text-3xl font-semibold mb-6" data-i18n="app.chart.title">Price Chart</h2>
                 <div class="mb-6">
-                    <input type="text" id="tokenAddress" placeholder="输入代币合约地址" 
+                    <input type="text" id="tokenAddress" data-i18n-placeholder="app.chart.input"
                            class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
-                    <button onclick="loadChart()" class="mt-4 bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg text-lg">
-                        加载图表
-                    </button>
+                    <button onclick="loadChart()" class="mt-4 bg-purple-600 hover:bg-purple-700 px-6 py-3 rounded-lg text-lg" 
+                            data-i18n="app.chart.load">Load Chart</button>
                 </div>
                 <div class="chart-container" style="position: relative; height:700px; background: #1a1a1a;">
                     <iframe id="chartFrame" style="width:100%; height:100%; border:none;" 
@@ -141,80 +144,77 @@
                 </div>
             </div>
 
-            <!-- 交易部分 -->
+            <!-- Trading section -->
             <div class="bg-gray-800 rounded-xl p-8 shadow-xl">
-                <h2 class="text-3xl font-semibold mb-6">AI交易策略</h2>
+                <h2 class="text-3xl font-semibold mb-6" data-i18n="app.strategy.title">AI Trading Strategy</h2>
                 <div class="mb-6">
-                    <button onclick="generateStrategy()" class="w-full bg-green-600 hover:bg-green-700 px-6 py-4 rounded-lg text-lg mb-6">
-                        生成策略
-                    </button>
-                    <div id="strategyOutput" class="bg-gray-700 p-6 rounded-lg min-h-[300px] text-lg whitespace-pre-wrap overflow-x-auto">
-                        策略将在这里显示...
-                    </div>
+                    <button onclick="generateStrategy()" class="w-full bg-green-600 hover:bg-green-700 px-6 py-4 rounded-lg text-lg mb-6" 
+                            data-i18n="app.strategy.generate">Generate Strategy</button>
+                    <div id="strategyOutput" class="bg-gray-700 p-6 rounded-lg min-h-[300px] text-lg whitespace-pre-wrap overflow-x-auto" 
+                         data-i18n="app.strategy.placeholder">Strategy will be displayed here...</div>
                 </div>
                 
                 <div class="mt-10">
-                    <h3 class="text-2xl font-semibold mb-6">执行交易</h3>
-                    <!-- 交易模式选择 -->
+                    <h3 class="text-2xl font-semibold mb-6" data-i18n="app.trade.title">Execute Trade</h3>
+                    <!-- Trading mode selection -->
                     <div class="mb-6">
-                        <label class="text-gray-400 text-lg mb-3">交易方向</label>
+                        <label class="text-gray-400 text-lg mb-3" data-i18n="app.trade.mode.label">Trading Direction</label>
                         <select id="tradeMode" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
-                            <option value="buy">买入代币</option>
-                            <option value="sell">卖出代币</option>
+                            <option value="buy" data-i18n="app.trade.mode.buy">Buy Token</option>
+                            <option value="sell" data-i18n="app.trade.mode.sell">Sell Token</option>
                         </select>
                     </div>
                     <div id="inputTypeContainer" class="mb-6">
-                        <label class="text-gray-400 text-lg mb-3">买入方式</label>
+                        <label class="text-gray-400 text-lg mb-3" data-i18n="app.trade.input.label">Buy Method</label>
                         <select id="inputType" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
-                            <option value="token">按代币数量</option>
-                            <option value="sol">按SOL数量</option>
+                            <option value="token" data-i18n="app.trade.input.token">By Token Amount</option>
+                            <option value="sol" data-i18n="app.trade.input.sol">By SOL Amount</option>
                         </select>
                     </div>
                     <div class="grid grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="text-gray-400 text-lg mb-3" id="amountLabel">代币数量</label>
-                            <input type="number" id="amount" placeholder="输入数量" step="any"
+                            <label class="text-gray-400 text-lg mb-3" id="amountLabel" data-i18n="app.trade.amount.label">Amount</label>
+                            <input type="number" id="amount" data-i18n-placeholder="app.trade.amount.placeholder" step="any"
                                    class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
                         </div>
                         <div>
-                            <label class="text-gray-400 text-lg mb-3">滑点 %</label>
-                            <input type="number" id="slippage" placeholder="滑点" value="1.0" step="0.1"
+                            <label class="text-gray-400 text-lg mb-3" data-i18n="app.trade.slippage.label">Slippage %</label>
+                            <input type="number" id="slippage" data-i18n-placeholder="app.trade.slippage.placeholder" value="1.0" step="0.1"
                                    class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
                         </div>
                     </div>
-                    <!-- 挂单类型 -->
+                    <!-- Order type -->
                     <div class="grid grid-cols-2 gap-6 mb-6">
                         <div>
-                            <label class="text-gray-400 text-lg mb-3">挂单类型</label>
+                            <label class="text-gray-400 text-lg mb-3" data-i18n="app.trade.order.label">Order Type</label>
                             <select id="orderType" class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
-                                <option value="market">市价单</option>
-                                <option value="limit">限价单</option>
+                                <option value="market" data-i18n="app.trade.order.market">Market Order</option>
+                                <option value="limit" data-i18n="app.trade.order.limit">Limit Order</option>
                             </select>
                         </div>
                         <div id="limitPriceContainer" class="hidden">
-                            <label class="text-gray-400 text-lg mb-3">限价价格</label>
-                            <input type="number" id="limitPrice" placeholder="输入价格" 
+                            <label class="text-gray-400 text-lg mb-3" data-i18n="app.trade.limit.label">Limit Price</label>
+                            <input type="number" id="limitPrice" data-i18n-placeholder="app.trade.limit.placeholder"
                                    class="w-full p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
                         </div>
                     </div>
-                    <button onclick="executeTrade()" class="w-full bg-blue-600 hover:bg-blue-700 px-6 py-4 rounded-lg text-lg mb-4">
-                        执行交易
-                    </button>
+                    <button onclick="executeTrade()" class="w-full bg-blue-600 hover:bg-blue-700 px-6 py-4 rounded-lg text-lg mb-4" 
+                            data-i18n="app.trade.execute">Execute Trade</button>
                     <div id="pendingOrders" class="mt-6">
-                        <h4 class="text-xl font-semibold mb-4">当前挂单</h4>
+                        <h4 class="text-xl font-semibold mb-4" data-i18n="app.trade.pending.title">Pending Orders</h4>
                         <div id="ordersList" class="space-y-4">
-                            <!-- 挂单将在这里显示 -->
+                            <!-- Pending orders will be displayed here -->
                         </div>
                     </div>
                 </div>
             </div>
         </div>
 
-        <!-- AI对话部分 -->
+        <!-- AI Chat section -->
         <div class="mt-10 bg-gray-800 rounded-xl p-8 shadow-xl">
-            <h2 class="text-3xl font-semibold mb-6">AI助手</h2>
+            <h2 class="text-3xl font-semibold mb-6" data-i18n="app.ai.title">AI Assistant</h2>
             
-            <!-- 高级参数 -->
+            <!-- Advanced parameters -->
             <div class="mb-6">
                 <div class="grid grid-cols-2 md:grid-cols-3 gap-6 mb-6">
                     <div>
@@ -238,16 +238,15 @@
                 </div>
             </div>
 
-            <!-- 对话历史 -->
+            <!-- Chat history -->
             <div id="chatHistory" class="bg-gray-700 p-6 rounded-lg mb-6 h-[400px] overflow-y-auto text-lg">
-                <!-- 对话消息将在这里显示 -->
+                <!-- Chat messages will be displayed here -->
             </div>
             <div class="flex gap-6">
-                <input type="text" id="chatInput" placeholder="输入您的问题..." 
+                <input type="text" id="chatInput" data-i18n-placeholder="app.ai.input"
                        class="flex-1 p-4 rounded-lg bg-gray-700 border border-gray-600 focus:border-purple-500 focus:outline-none text-lg">
-                <button onclick="sendMessage()" class="bg-purple-600 hover:bg-purple-700 px-8 py-4 rounded-lg text-lg">
-                    发送
-                </button>
+                <button onclick="sendMessage()" class="bg-purple-600 hover:bg-purple-700 px-8 py-4 rounded-lg text-lg" 
+                        data-i18n="app.ai.send">Send</button>
             </div>
         </div>
     </div>

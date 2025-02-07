@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.responses import FileResponse
@@ -9,6 +9,7 @@ from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
 import asyncio
 import base64
+import json
 
 load_dotenv()
 
@@ -26,8 +27,14 @@ app.add_middleware(
 # Mount static files
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# 配置从.env文件自动加载
-load_dotenv()
+# Mount locales
+app.mount("/locales", StaticFiles(directory="locales"), name="locales")
+
+# Load translations
+translations = {}
+for locale in ['en', 'zh']:
+    with open(f'locales/{locale}.json', 'r', encoding='utf-8') as f:
+        translations[locale] = json.load(f)
 
 # 从.env文件加载配置
 GMGN_API_HOST = os.getenv("GMGN_API_HOST")

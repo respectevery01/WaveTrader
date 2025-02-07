@@ -1,8 +1,162 @@
-# WaveTrader - AI 驱动的 Solana 交易机器人
+# WaveTrader
+
+[English](#english) | [中文](#chinese)
+
+<a name="english"></a>
+## WaveTrader - AI-Powered Solana Trading Bot
+
+An AI-powered Solana trading bot providing real-time chart analysis, intelligent trading strategy generation, and automated trading execution.
+
+### Features
+
+- 🚀 Real-time price chart display
+- 🤖 AI-driven trading strategy generation
+- 💰 Automated trading execution
+- 📊 Market data analysis
+- 🔒 Secure wallet integration
+- 💡 Smart trading suggestions
+
+### System Requirements
+
+- Python 3.8+
+- Node.js 14+
+- Phantom Wallet
+- DeepSeek API Key
+- GMGN API Access
+
+### Installation
+
+1. Clone repository:
+```bash
+git clone <repository-url>
+cd wave-trader
+```
+
+2. Install Python dependencies:
+```bash
+pip install -r requirements.txt
+```
+
+3. Configure environment variables:
+   - Copy `.env.example` to `.env`
+   - Fill in required configuration:
+```env
+# AI Model Configuration
+AI_MODEL_ID=deepseek-chat
+AI_API_URL=https://api.deepseek.com
+AI_API_KEY=your_api_key_here
+
+# GMGN Configuration
+GMGN_API_HOST=https://gmgn.ai
+```
+
+### Usage
+
+1. Start server:
+```bash
+python server.py
+```
+
+2. Open browser:
+```
+http://localhost:8000
+```
+
+3. Connect Phantom wallet:
+   - Click "Connect Wallet" button
+   - Confirm connection in Phantom wallet
+
+4. Trading operations:
+   - Enter token contract address
+   - View real-time price chart
+   - Generate AI trading strategy
+   - Execute buy/sell operations
+
+### Security
+
+- Private key security:
+  - All private keys securely managed by Phantom wallet
+  - Application cannot access private keys
+  - All transactions require wallet confirmation
+
+- Trading security:
+  - Slippage protection
+  - Balance check before trading
+  - Complete error handling
+  - Transaction status monitoring
+
+### API Endpoints
+
+#### Trading Related
+
+- `POST /api/trade`: Execute trade
+- `POST /api/confirm_trade`: Confirm trade
+- `GET /api/transaction_status`: Query transaction status
+
+#### AI Strategy Related
+
+- `POST /api/analyze`: Generate trading strategy
+- `GET /api/config`: Get AI configuration
+
+### Development Guide
+
+#### Frontend Structure
+
+```
+static/
+├── app.js      # Main application logic
+├── styles.css  # Style file
+└── index.html  # Main page
+```
+
+#### Backend Structure
+
+```
+server.py       # FastAPI server
+requirements.txt # Python dependencies
+.env           # Environment configuration
+```
+
+### Common Issues
+
+1. Wallet connection issues:
+   - Ensure Phantom wallet is installed
+   - Check if wallet is unlocked
+   - Ensure on Solana mainnet or testnet
+
+2. Trading failures:
+   - Check sufficient balance
+   - Confirm reasonable slippage settings
+   - View specific error messages
+
+3. AI strategy generation failures:
+   - Confirm API key configuration
+   - Check network connection
+   - View server logs
+
+### License
+
+MIT License
+
+### Contact
+
+- Issue feedback: Submit in GitHub Issues
+- Feature suggestions: Welcome Pull Requests
+
+### Disclaimer
+
+- This project is for learning and research purposes only
+- Cryptocurrency trading carries high risk, please use with caution
+- Author not responsible for any losses from using this software
+
+---
+
+<a name="chinese"></a>
+## WaveTrader - AI 驱动的 Solana 交易机器人
 
 一个基于 AI 的 Solana 交易机器人，提供实时图表分析、智能交易策略生成和自动化交易执行功能。
 
-## 功能特点
+### 功能特点
 
 - 🚀 实时价格图表显示
 - 🤖 AI 驱动的交易策略生成
@@ -11,7 +165,7 @@
 - 🔒 安全的钱包集成
 - 💡 智能交易建议
 
-## 系统要求
+### 系统要求
 
 - Python 3.8+
 - Node.js 14+
@@ -19,7 +173,7 @@
 - DeepSeek API 密钥
 - GMGN API 访问权限
 
-## 安装步骤
+### 安装步骤
 
 1. 克隆仓库：
 ```bash
@@ -45,7 +199,7 @@ AI_API_KEY=your_api_key_here
 GMGN_API_HOST=https://gmgn.ai
 ```
 
-## 使用方法
+### 使用方法
 
 1. 启动服务器：
 ```bash
@@ -67,7 +221,7 @@ http://localhost:8000
    - 生成 AI 交易策略
    - 执行买入/卖出操作
 
-## 安全说明
+### 安全说明
 
 - 私钥安全：
   - 所有私钥由 Phantom 钱包安全管理
@@ -80,22 +234,22 @@ http://localhost:8000
   - 完整的错误处理
   - 交易状态监控
 
-## API 端点
+### API 端点
 
-### 交易相关
+#### 交易相关
 
 - `POST /api/trade`：执行交易
 - `POST /api/confirm_trade`：确认交易
 - `GET /api/transaction_status`：查询交易状态
 
-### AI 策略相关
+#### AI 策略相关
 
 - `POST /api/analyze`：生成交易策略
 - `GET /api/config`：获取 AI 配置
 
-## 开发指南
+### 开发指南
 
-### 前端结构
+#### 前端结构
 
 ```
 static/
@@ -104,7 +258,7 @@ static/
 └── index.html  # 主页面
 ```
 
-### 后端结构
+#### 后端结构
 
 ```
 server.py       # FastAPI 服务器
@@ -112,19 +266,7 @@ requirements.txt # Python 依赖
 .env           # 环境配置
 ```
 
-### 添加新功能
-
-1. 后端扩展：
-   - 在 `server.py` 中添加新的路由
-   - 使用 FastAPI 依赖注入系统
-   - 保持一致的错误处理
-
-2. 前端扩展：
-   - 在 `app.js` 中添加新的功能
-   - 保持与现有代码风格一致
-   - 添加适当的错误处理
-
-## 常见问题
+### 常见问题
 
 1. 钱包连接问题：
    - 确保安装了 Phantom 钱包
@@ -141,24 +283,16 @@ requirements.txt # Python 依赖
    - 检查网络连接
    - 查看服务器日志
 
-## 贡献指南
-
-1. Fork 项目
-2. 创建功能分支
-3. 提交更改
-4. 推送到分支
-5. 创建 Pull Request
-
-## 许可证
+### 许可证
 
 MIT License
 
-## 联系方式
+### 联系方式
 
 - 问题反馈：在 GitHub Issues 中提交
 - 功能建议：欢迎提交 Pull Request
 
-## 免责声明
+### 免责声明
 
 - 本项目仅供学习和研究使用
 - 加密货币交易具有高风险，请谨慎使用
