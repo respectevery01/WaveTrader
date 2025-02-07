@@ -185,9 +185,9 @@ async def analyze_chart(request: AnalyzeRequest):
         market_context = "\n".join(market_info)
         
         # 更新system prompt
-        for msg in request.messages:
-            if msg.role == "system":
-                msg.content = f"""你是一位专业的加密货币交易分析师，专注于提供具体的交易建议。基于市场数据，你需要给出明确的：
+        system_message = {
+            "role": "system",
+            "content": f"""你是一位专业的加密货币交易分析师，专注于提供具体的交易建议。基于市场数据，你需要给出明确的：
 1. 当前是适合买入还是卖出的时机
 2. 具体的入场价格区间
 3. 明确的止盈价格位置（可以设置多个目标位）
@@ -198,48 +198,24 @@ async def analyze_chart(request: AnalyzeRequest):
 请确保你的建议具体、可操作，包含具体的数字和百分比。
 
 市场数据:\n{market_context}"""
-                break
-            
+        }
+
+        # 构建消息列表
+        messages = [system_message]
+        for msg in request.messages:
+            if msg.role != "system":  # 跳过用户提供的system消息
+                messages.append(msg.dict())
+        
         # 构建请求头
         headers = {
             "Authorization": f"Bearer {api_key}",
             "Content-Type": "application/json"
         }
         
-        # 构建用户提示
-        user_prompt = f"""请分析 {base_token.get('symbol', 'Unknown')} 代币的交易机会，我需要具体的交易建议：
-
-1. 交易方向：
-   - 现在是买入还是卖出的好时机？
-   - 为什么这么建议？
-
-2. 具体价格位置：
-   - 建议的入场价格区间
-   - 第一目标位（止盈点）
-   - 第二目标位（如果有）
-   - 止损位置
-   
-3. 交易计划：
-   - 建议的持仓时间
-   - 建议的仓位大小（占总资金的百分比）
-   - 是否建议分批建仓/退场
-   
-4. 风险提示：
-   - 目前最大的风险是什么
-   - 如何管理这些风险
-
-请给出具体的数字，而不是模糊的建议。"""
-
-        # 更新用户消息
-        for msg in request.messages:
-            if msg.role == "user":
-                msg.content = user_prompt
-                break
-        
         # 构建标准的OpenAI API请求格式
         ai_request = {
             "model": model,
-            "messages": [msg.dict() for msg in request.messages],
+            "messages": messages,
             "temperature": request.temperature,
             "max_tokens": request.max_tokens,
             "top_p": request.top_p,
@@ -252,69 +228,104 @@ async def analyze_chart(request: AnalyzeRequest):
         # 移除所有None值的参数
         ai_request = {k: v for k, v in ai_request.items() if v is not None}
         
-        try:
-            async with httpx.AsyncClient(timeout=600.0) as client:  # 增加超时时间到600秒
-                # 确保API URL以/v1结尾
-                base_url = api_url.rstrip('/')
-                if not base_url.endswith('/v1'):
-                    base_url += '/v1'
+        # 添加重试逻辑
+        max_retries = 3
+        retry_delay = 2  # 初始延迟2秒
+        
+        for attempt in range(max_retries):
+            try:
+                async with httpx.AsyncClient(timeout=600.0) as client:
+                    base_url = api_url.rstrip('/')
+                    if not base_url.endswith('/v1'):
+                        base_url += '/v1'
+                        
+                    print(f"尝试第 {attempt + 1} 次发送AI请求")
+                    print("AI API URL:", f"{base_url}/chat/completions")
                     
-                print("发送到AI的请求:", ai_request)
-                print("AI API URL:", f"{base_url}/chat/completions")
-                print("AI API Headers:", headers)
-                
-                response = await client.post(
-                    f"{base_url}/chat/completions",
-                    headers=headers,
-                    json=ai_request,
-                    timeout=600.0  # 增加超时时间到600秒
+                    response = await client.post(
+                        f"{base_url}/chat/completions",
+                        headers=headers,
+                        json=ai_request,
+                        timeout=600.0
+                    )
+                    
+                    print(f"第 {attempt + 1} 次尝试 - 状态码:", response.status_code)
+                    print(f"第 {attempt + 1} 次尝试 - 响应内容:", response.text)
+                    
+                    if response.status_code == 200:
+                        try:
+                            ai_response = response.json()
+                            if 'choices' in ai_response and ai_response['choices']:
+                                message = ai_response['choices'][0].get('message', {})
+                                if isinstance(message, dict):
+                                    content = message.get('content')
+                                else:
+                                    content = message
+                                
+                                if content:
+                                    return {
+                                        "status": "success",
+                                        "strategy": content.replace('\n', '<br>')
+                                    }
+                            
+                            print(f"第 {attempt + 1} 次尝试 - 无效的响应格式:", ai_response)
+                            
+                        except json.JSONDecodeError as e:
+                            print(f"第 {attempt + 1} 次尝试 - JSON解析错误:", str(e))
+                        
+                        if attempt < max_retries - 1:
+                            await asyncio.sleep(retry_delay)
+                            retry_delay *= 2
+                            continue
+                            
+                    elif response.status_code >= 500:
+                        if attempt < max_retries - 1:
+                            await asyncio.sleep(retry_delay)
+                            retry_delay *= 2
+                            continue
+                        raise HTTPException(
+                            status_code=response.status_code,
+                            detail=f"AI API server error after {max_retries} attempts"
+                        )
+                    else:
+                        raise HTTPException(
+                            status_code=response.status_code,
+                            detail=f"AI API error: {response.text}"
+                        )
+                        
+            except httpx.RequestError as e:
+                print(f"第 {attempt + 1} 次尝试网络错误:", str(e))
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(retry_delay)
+                    retry_delay *= 2
+                    continue
+                raise HTTPException(
+                    status_code=500,
+                    detail=f"Network error when calling AI API: {str(e)}"
                 )
                 
-                print("AI API响应状态码:", response.status_code)
-                print("AI API响应内容:", response.text)
+            except Exception as e:
+                print(f"第 {attempt + 1} 次尝试出错:", str(e))
+                if attempt < max_retries - 1:
+                    await asyncio.sleep(retry_delay)
+                    retry_delay *= 2
+                    continue
+                raise
                 
-                if response.status_code != 200:
-                    error_detail = str(response.text)
-                    print("AI API错误:", error_detail)
-                    raise HTTPException(
-                        status_code=response.status_code,
-                        detail=f"AI API error: {error_detail}"
-                    )
-                
-                ai_response = response.json()
-                try:
-                    strategy = ai_response['choices'][0]['message']['content']
-                    # 格式化策略输出为HTML
-                    formatted_strategy = strategy.replace('\n', '<br>')
-                    return {"status": "success", "strategy": formatted_strategy}
-                except KeyError as e:
-                    print("AI响应格式错误:", ai_response)
-                    raise HTTPException(
-                        status_code=500,
-                        detail=f"Unexpected API response format: {str(ai_response)}"
-                    )
-                
-        except httpx.RequestError as e:
-            print("AI API网络错误:", str(e))
-            print("错误类型:", type(e).__name__)
-            print("错误详情:", str(e))
-            raise HTTPException(
-                status_code=500,
-                detail=f"Network error when calling AI API: {str(e)}"
-            )
-        except Exception as e:
-            print("处理AI响应时出错:", str(e))
-            print("错误类型:", type(e).__name__)
-            print("错误详情:", str(e))
-            raise HTTPException(
-                status_code=500,
-                detail=f"Error processing AI response: {str(e)}"
-            )
-            
-    except Exception as e:
         raise HTTPException(
             status_code=500,
-            detail=f"Error: {str(e)}"
+            detail=f"Failed to get valid response from AI API after {max_retries} attempts"
+        )
+            
+    except Exception as e:
+        print("分析过程中出错:", str(e))
+        print("错误类型:", type(e).__name__)
+        print("错误详情:", str(e))
+        if isinstance(e, HTTPException):
+            raise e
+        raise HTTPException(
+            status_code=500,
+            detail=f"Error during analysis: {str(e)}"
         )
 
 async def validate_token(token_address: str, client: httpx.AsyncClient) -> bool:

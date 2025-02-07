@@ -15,7 +15,9 @@
             "title": "AI交易策略",
             "generate": "生成策略",
             "loading": "正在生成策略...",
-            "placeholder": "策略将在这里显示..."
+            "placeholder": "策略将在这里显示...",
+            "system_prompt": "你是一位专业的加密货币交易分析师。你将获得来自GMGN和DexScreener的详细市场数据，包括价格变化、流动性、交易量等信息。请基于这些数据进行深入分析，特别关注价格趋势、流动性变化和市场情绪。在分析中要考虑短期（5分钟到1小时）和中长期（6小时到24小时）的价格变动。",
+            "user_prompt": "请分析Solana代币 {token} 并提供以下建议：\n\n1. 交易方向：\n   - 现在是买入还是卖出的好时机？\n   - 为什么这么建议？\n\n2. 具体价格位置：\n   - 建议的入场价格区间\n   - 第一目标位（止盈点）\n   - 第二目标位（如果有）\n   - 止损位置\n\n3. 交易计划：\n   - 建议的持仓时间\n   - 建议的仓位大小（占总资金的百分比）\n   - 是否建议分批建仓/退场\n\n4. 风险提示：\n   - 目前最大的风险是什么\n   - 如何管理这些风险\n\n请给出具体的数字，而不是模糊的建议。"
         },
         "trade": {
             "title": "执行交易",
@@ -31,7 +33,13 @@
             },
             "amount": {
                 "label": "数量",
-                "placeholder": "输入数量"
+                "placeholder": "输入数量",
+                "sell_label": "卖出{token}数量",
+                "sell_placeholder": "输入要卖出的{token}数量",
+                "buy_token_label": "买入{token}数量",
+                "buy_token_placeholder": "输入要买入的{token}数量",
+                "buy_sol_label": "支付SOL数量",
+                "buy_sol_placeholder": "输入要支付的SOL数量"
             },
             "slippage": {
                 "label": "滑点 %",
@@ -63,7 +71,23 @@
             "invalid_slippage": "请输入有效的滑点值",
             "invalid_price": "请输入有效的价格",
             "insufficient_balance": "余额不足",
-            "transaction_failed": "交易失败"
+            "transaction_failed": "交易失败",
+            "strategy_timeout": "生成策略超时，请重试",
+            "strategy_failed": "生成策略失败，请重试",
+            "token_required": "请输入代币合约地址",
+            "token_info_failed": "获取代币信息失败",
+            "model_config_failed": "无法加载模型配置",
+            "request_timeout": "请求超时",
+            "api_response_error": "API响应错误",
+            "strategy_generation_failed": "策略生成请求失败",
+            "invalid_response_format": "无效的响应格式",
+            "strategy_generation_error": "生成策略时出错",
+            "wallet_init_error": "钱包初始化错误",
+            "wallet_connection_error": "钱包连接错误",
+            "wallet_connection_failed": "连接钱包失败"
+        },
+        "logs": {
+            "api_response_data": "API响应数据"
         }
     }
 } 

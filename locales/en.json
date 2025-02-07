@@ -15,7 +15,9 @@
             "title": "AI Trading Strategy",
             "generate": "Generate Strategy",
             "loading": "Generating strategy...",
-            "placeholder": "Strategy will be displayed here..."
+            "placeholder": "Strategy will be displayed here...",
+            "system_prompt": "You are a professional cryptocurrency trading analyst. You will receive detailed market data from GMGN and DexScreener, including price changes, liquidity, trading volume, and other information. Please conduct in-depth analysis based on this data, focusing on price trends, liquidity changes, and market sentiment. Consider both short-term (5 minutes to 1 hour) and medium to long-term (6 hours to 24 hours) price movements.",
+            "user_prompt": "Please analyze Solana token {token} and provide the following recommendations:\n\n1. Trading Direction:\n   - Is now a good time to buy or sell?\n   - Why do you recommend this?\n\n2. Specific Price Levels:\n   - Recommended entry price range\n   - First target (take profit point)\n   - Second target (if applicable)\n   - Stop loss level\n\n3. Trading Plan:\n   - Recommended holding period\n   - Suggested position size (percentage of total funds)\n   - Whether to recommend staged entry/exit\n\n4. Risk Warning:\n   - What is the biggest current risk?\n   - How to manage these risks\n\nPlease provide specific numbers rather than vague suggestions."
         },
         "trade": {
             "title": "Execute Trade",
@@ -31,7 +33,13 @@
             },
             "amount": {
                 "label": "Amount",
-                "placeholder": "Enter amount"
+                "placeholder": "Enter amount",
+                "sell_label": "Amount of {token} to Sell",
+                "sell_placeholder": "Enter the amount of {token} to sell",
+                "buy_token_label": "Amount of {token} to Buy",
+                "buy_token_placeholder": "Enter the amount of {token} to buy",
+                "buy_sol_label": "Amount of SOL to Pay",
+                "buy_sol_placeholder": "Enter the amount of SOL to pay"
             },
             "slippage": {
                 "label": "Slippage %",
@@ -63,7 +71,23 @@
             "invalid_slippage": "Please enter a valid slippage value",
             "invalid_price": "Please enter a valid price",
             "insufficient_balance": "Insufficient balance",
-            "transaction_failed": "Transaction failed"
+            "transaction_failed": "Transaction failed",
+            "strategy_timeout": "Strategy generation timed out, please try again",
+            "strategy_failed": "Failed to generate strategy, please try again",
+            "token_required": "Please enter token contract address",
+            "token_info_failed": "Failed to get token information",
+            "model_config_failed": "Failed to load model configuration",
+            "request_timeout": "Request timeout",
+            "api_response_error": "API response error",
+            "strategy_generation_failed": "Strategy generation request failed",
+            "invalid_response_format": "Invalid response format",
+            "strategy_generation_error": "Error generating strategy",
+            "wallet_init_error": "Wallet initialization error",
+            "wallet_connection_error": "Wallet connection error",
+            "wallet_connection_failed": "Failed to connect wallet"
+        },
+        "logs": {
+            "api_response_data": "API response data"
         }
     }
 } 

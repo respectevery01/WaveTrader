@@ -21,13 +21,20 @@ class I18n {
         this.loadTranslations();
     }
 
-    t(key) {
+    t(key, params = {}) {
         const keys = key.split('.');
         let value = this.translations;
         
         for (const k of keys) {
             value = value?.[k];
             if (!value) return key;
+        }
+        
+        // 替换参数
+        if (typeof value === 'string' && params) {
+            return value.replace(/\{(\w+)\}/g, (match, key) => {
+                return params[key] !== undefined ? params[key] : match;
+            });
         }
         
         return value;
@@ -37,13 +44,29 @@ class I18n {
         // Update all elements with data-i18n attribute
         document.querySelectorAll('[data-i18n]').forEach(element => {
             const key = element.getAttribute('data-i18n');
-            element.textContent = this.t(key);
+            // 获取可能存在的参数
+            const params = {};
+            for (const attr of element.attributes) {
+                if (attr.name.startsWith('data-i18n-param-')) {
+                    const paramName = attr.name.replace('data-i18n-param-', '');
+                    params[paramName] = attr.value;
+                }
+            }
+            element.textContent = this.t(key, params);
         });
 
         // Update all placeholders with data-i18n-placeholder
         document.querySelectorAll('[data-i18n-placeholder]').forEach(element => {
             const key = element.getAttribute('data-i18n-placeholder');
-            element.placeholder = this.t(key);
+            // 获取可能存在的参数
+            const params = {};
+            for (const attr of element.attributes) {
+                if (attr.name.startsWith('data-i18n-param-')) {
+                    const paramName = attr.name.replace('data-i18n-param-', '');
+                    params[paramName] = attr.value;
+                }
+            }
+            element.placeholder = this.t(key, params);
         });
     }
 }

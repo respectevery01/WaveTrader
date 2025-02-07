@@ -1,10 +1,10 @@
 // Global variables
 let currentTokenAddress = '';
+let currentTokenSymbol = '';
 let chatHistory = [];
 let modelConfig = null;
 let wallet = null;
 let pendingOrders = [];
-let currentTokenSymbol = '';
 
 // Update temperature display
 function updateTemperature(value) {
@@ -65,11 +65,46 @@ async function loadModelConfig() {
     }
 }
 
+// Document ready handler
+document.addEventListener('DOMContentLoaded', () => {
+    // 加载模型配置
+    loadModelConfig();
+    
+    // 设置默认代币地址并加载图表
+    const defaultToken = "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82";
+    document.getElementById('tokenAddress').value = defaultToken;
+    loadChart();
+    
+    // 添加事件监听器
+    document.getElementById('tradeMode').addEventListener('change', updateInputLabels);
+    document.getElementById('inputType').addEventListener('change', updateInputLabels);
+    document.getElementById('orderType').addEventListener('change', handleOrderTypeChange);
+    
+    // 添加聊天输入框的回车事件监听
+    const chatInput = document.getElementById('chatInput');
+    chatInput.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+});
+
+// Handle order type change
+function handleOrderTypeChange(e) {
+    const limitPriceContainer = document.getElementById('limitPriceContainer');
+    if (e.target.value === 'limit') {
+        limitPriceContainer.classList.remove('hidden');
+    } else {
+        limitPriceContainer.classList.add('hidden');
+    }
+}
+
 // Load chart data
 function loadChart() {
     const tokenAddress = document.getElementById('tokenAddress').value;
     if (!tokenAddress) {
-        alert('请输入代币合约地址');
+        alert(i18n.t('app.errors.token_required'));
         return;
     }
 
@@ -77,14 +112,30 @@ function loadChart() {
     fetch(`https://api.dexscreener.com/latest/dex/tokens/${tokenAddress}`)
         .then(response => response.json())
         .then(data => {
+            console.log('Token info:', data);
             if (data.pairs && data.pairs.length > 0) {
                 const baseToken = data.pairs[0].baseToken;
-                currentTokenSymbol = baseToken.symbol;
-                // 更新输入标签
+                if (baseToken && baseToken.symbol) {
+                    console.log('Found token symbol:', baseToken.symbol);
+                    currentTokenSymbol = baseToken.symbol;
+                    // 立即更新输入标签
+                    updateInputLabels();
+                } else {
+                    console.error('No token symbol found in response');
+                    currentTokenSymbol = 'Token';
+                    updateInputLabels();
+                }
+            } else {
+                console.error('No trading pairs found for token');
+                currentTokenSymbol = 'Token';
                 updateInputLabels();
             }
         })
-        .catch(error => console.error('获取代币信息失败:', error));
+        .catch(error => {
+            console.error(i18n.t('app.errors.token_info_failed'), error);
+            currentTokenSymbol = 'Token';
+            updateInputLabels();
+        });
 
     // 加载图表
     const timestamp = new Date().getTime();
@@ -97,19 +148,19 @@ function loadChart() {
 // Generate trading strategy
 async function generateStrategy() {
     const strategyOutput = document.getElementById('strategyOutput');
-    strategyOutput.innerHTML = '正在生成策略...';
+    strategyOutput.innerHTML = i18n.t('app.strategy.loading');
 
     try {
         const tokenAddress = document.getElementById('tokenAddress').value;
         if (!tokenAddress) {
-            strategyOutput.innerHTML = '请先输入代币合约地址';
+            strategyOutput.innerHTML = i18n.t('app.strategy.placeholder');
             return;
         }
 
         if (!modelConfig) {
             await loadModelConfig();
             if (!modelConfig) {
-                throw new Error('无法加载模型配置');
+                throw new Error(i18n.t('app.errors.model_config_failed'));
             }
         }
 
@@ -117,37 +168,17 @@ async function generateStrategy() {
         const messages = [
             {
                 role: "system",
-                content: "你是一位专业的加密货币交易分析师。你将获得来自GMGN和DexScreener的详细市场数据，包括价格变化、流动性、交易量等信息。请基于这些数据进行深入分析，特别关注价格趋势、流动性变化和市场情绪。在分析中要考虑短期（5分钟到1小时）和中长期（6小时到24小时）的价格变动。"
+                content: i18n.t('app.strategy.system_prompt')
             },
             {
                 role: "user",
-                content: `请分析Solana代币 ${tokenAddress} 并提供以下建议：
-1. 交易方向：
-   - 现在是买入还是卖出的好时机？
-   - 为什么这么建议？
-
-2. 具体价格位置：
-   - 建议的入场价格区间
-   - 第一目标位（止盈点）
-   - 第二目标位（如果有）
-   - 止损位置
-   
-3. 交易计划：
-   - 建议的持仓时间
-   - 建议的仓位大小（占总资金的百分比）
-   - 是否建议分批建仓/退场
-   
-4. 风险提示：
-   - 目前最大的风险是什么
-   - 如何管理这些风险
-
-请给出具体的数字，而不是模糊的建议。`
+                content: i18n.t('app.strategy.user_prompt', { token: tokenAddress })
             }
         ];
 
         // 设置更长的超时时间
         const timeoutPromise = new Promise((_, reject) => {
-            setTimeout(() => reject(new Error('请求超时')), 600000); // 10分钟超时
+            setTimeout(() => reject(new Error(i18n.t('app.errors.request_timeout'))), 600000); // 10分钟超时
         });
 
         // 创建实际的请求
@@ -169,13 +200,13 @@ async function generateStrategy() {
         // 检查响应状态
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('API响应错误:', errorText);
-            throw new Error(errorText || '策略生成请求失败');
+            console.error(i18n.t('app.errors.api_response_error'), errorText);
+            throw new Error(errorText || i18n.t('app.errors.strategy_generation_failed'));
         }
 
         // 读取响应内容
         const data = await response.json();
-        console.log('API响应数据:', data);
+        console.log(i18n.t('app.logs.api_response_data'), data);
 
         if (data.strategy) {
             // 使用 marked 将 markdown 转换为 HTML
@@ -183,16 +214,16 @@ async function generateStrategy() {
             strategyOutput.className = 'bg-gray-700 p-6 rounded-lg min-h-[300px] text-lg markdown-body';
             const formattedStrategy = data.strategy
                 .replace(/<br>/g, '\n')
-                .replace(/\*\*/g, '__')  // 转换粗体标记
-                .replace(/- /g, '* ');   // 转换列表标记
+                .replace(/\*\*/g, '__')
+                .replace(/- /g, '* ');
             strategyOutput.innerHTML = marked.parse(formattedStrategy);
         } else {
-            throw new Error('无效的响应格式');
+            throw new Error(i18n.t('app.errors.invalid_response_format'));
         }
     } catch (error) {
-        console.error('生成策略时出错:', error);
-        if (error.message === '请求超时') {
-            strategyOutput.innerHTML = '生成策略需要较长时间，请耐心等待...';
+        console.error(i18n.t('app.errors.strategy_generation_error'), error);
+        if (error.message === i18n.t('app.errors.request_timeout')) {
+            strategyOutput.innerHTML = i18n.t('app.errors.strategy_timeout');
             // 继续轮询检查结果
             let retryCount = 0;
             const checkResult = async () => {
@@ -224,23 +255,23 @@ async function generateStrategy() {
                     }
 
                     if (retryCount++ < 60) { // 最多重试60次，每10秒一次
-                        strategyOutput.innerHTML = `生成策略中，请耐心等待... (${retryCount}/60)`;
+                        strategyOutput.innerHTML = `${i18n.t('app.strategy.loading')} (${retryCount}/60)`;
                         setTimeout(checkResult, 10000);
                     } else {
-                        strategyOutput.innerHTML = '生成策略超时，请重试';
+                        strategyOutput.innerHTML = i18n.t('app.errors.strategy_timeout');
                     }
                 } catch (error) {
                     console.error('检查结果时出错:', error);
                     if (retryCount++ < 60) {
                         setTimeout(checkResult, 10000);
                     } else {
-                        strategyOutput.innerHTML = '生成策略失败，请重试';
+                        strategyOutput.innerHTML = i18n.t('app.errors.strategy_timeout');
                     }
                 }
             };
             setTimeout(checkResult, 10000);
         } else {
-            strategyOutput.innerHTML = `生成策略时出错: ${error.message}`;
+            strategyOutput.innerHTML = `${i18n.t('app.errors.strategy_generation_error')}: ${error.message}`;
         }
     }
 }
@@ -256,7 +287,7 @@ async function initWallet() {
         }
         window.open('https://phantom.app/', '_blank');
     } catch (error) {
-        console.error('Wallet initialization error:', error);
+        console.error(i18n.t('app.errors.wallet_init_error'), error);
     }
     return null;
 }
@@ -269,7 +300,7 @@ async function connectWallet() {
         }
         
         if (!wallet) {
-            alert('请先安装Phantom钱包');
+            alert(i18n.t('app.wallet.install'));
             return;
         }
 
@@ -282,60 +313,52 @@ async function connectWallet() {
             button.classList.add('connected');
         } else {
             await wallet.disconnect();
-            button.innerHTML = '<span>连接钱包</span>';
+            button.innerHTML = `<span>${i18n.t('app.wallet.connect')}</span>`;
             button.classList.remove('connected');
             wallet = null;
         }
     } catch (error) {
-        console.error('Wallet connection error:', error);
-        alert('连接钱包时出错');
+        console.error(i18n.t('app.errors.wallet_connection_error'), error);
+        alert(i18n.t('app.errors.wallet_connection_failed'));
     }
 }
-
-// Handle order type change
-document.getElementById('orderType').addEventListener('change', function(e) {
-    const limitPriceContainer = document.getElementById('limitPriceContainer');
-    if (e.target.value === 'limit') {
-        limitPriceContainer.classList.remove('hidden');
-    } else {
-        limitPriceContainer.classList.add('hidden');
-    }
-});
-
-// Handle trade mode and input type changes
-document.getElementById('tradeMode').addEventListener('change', updateInputLabels);
-document.getElementById('inputType').addEventListener('change', updateInputLabels);
 
 function updateInputLabels() {
     const tradeMode = document.getElementById('tradeMode').value;
     const inputType = document.getElementById('inputType').value;
     const amountLabel = document.getElementById('amountLabel');
     const amountInput = document.getElementById('amount');
-    const inputTypeSelect = document.getElementById('inputType');
     const inputTypeContainer = document.getElementById('inputTypeContainer');
 
-    // 获取当前代币符号
-    const tokenSymbol = currentTokenSymbol || '代币';
+    // 确保 currentTokenSymbol 有值
+    const tokenSymbol = currentTokenSymbol || 'Token';
+    console.log('Updating labels with token symbol:', tokenSymbol);
 
     // 如果是卖出，隐藏输入类型选择，固定为代币数量
     if (tradeMode === 'sell') {
         inputTypeContainer.style.display = 'none';
-        labelText = `${tokenSymbol}数量`;
-        placeholder = `输入要卖出的${tokenSymbol}数量`;
+        const sellLabel = i18n.t('app.trade.amount.sell_label', { token: tokenSymbol });
+        const sellPlaceholder = i18n.t('app.trade.amount.sell_placeholder', { token: tokenSymbol });
+        console.log('Sell mode labels:', { sellLabel, sellPlaceholder });
+        amountLabel.textContent = sellLabel;
+        amountInput.placeholder = sellPlaceholder;
     } else {
         // 买入时显示输入类型选择
         inputTypeContainer.style.display = 'block';
         if (inputType === 'token') {
-            labelText = `${tokenSymbol}数量`;
-            placeholder = `输入要买入的${tokenSymbol}数量`;
+            const buyLabel = i18n.t('app.trade.amount.buy_token_label', { token: tokenSymbol });
+            const buyPlaceholder = i18n.t('app.trade.amount.buy_token_placeholder', { token: tokenSymbol });
+            console.log('Buy token mode labels:', { buyLabel, buyPlaceholder });
+            amountLabel.textContent = buyLabel;
+            amountInput.placeholder = buyPlaceholder;
         } else {
-            labelText = 'SOL数量';
-            placeholder = '输入要支付的SOL数量';
+            const solLabel = i18n.t('app.trade.amount.buy_sol_label');
+            const solPlaceholder = i18n.t('app.trade.amount.buy_sol_placeholder');
+            console.log('Buy SOL mode labels:', { solLabel, solPlaceholder });
+            amountLabel.textContent = solLabel;
+            amountInput.placeholder = solPlaceholder;
         }
     }
-
-    amountLabel.textContent = `${tradeMode === 'buy' ? '买入' : '卖出'}${labelText}`;
-    amountInput.placeholder = placeholder;
 }
 
 // Add pending order
@@ -609,26 +632,6 @@ async function sendMessage() {
         appendMessage('assistant', '抱歉，处理您的消息时出现错误。');
     }
 }
-
-// Handle Enter key in chat input
-document.addEventListener('DOMContentLoaded', () => {
-    // 加载模型配置
-    loadModelConfig();
-    
-    // 设置默认代币地址并加载图表
-    const defaultToken = "ukHH6c7mMyiWCf1b9pnWe25TSpkDDt3H5pQZgZ74J82";
-    document.getElementById('tokenAddress').value = defaultToken;
-    loadChart();
-    
-    // 添加聊天输入框的回车事件监听
-    const chatInput = document.getElementById('chatInput');
-    chatInput.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            sendMessage();
-        }
-    });
-});
 
 // 在文件顶部添加 marked.js
 document.head.innerHTML += '<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>'; 
